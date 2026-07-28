@@ -371,9 +371,3 @@ Todos os microsserviços disponibilizam:
 - Fácil manutenção
 - Fácil adição de novos protocolos
 - Processamento em tempo real
-
----
-
-# Licença
-
-MIT License
