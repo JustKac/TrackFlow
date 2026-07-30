@@ -1,66 +1,324 @@
 # gateway-service
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Serviço de gateway do **TrackFlow**, desenvolvido com **Java 21** e **Quarkus**.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+Este serviço representa a base da infraestrutura do gateway da plataforma, fornecendo observabilidade, integração com Apache Kafka, documentação da API e endpoints de monitoramento. As funcionalidades de comunicação com rastreadores e processamento de telemetria serão implementadas nas próximas etapas do projeto.
 
-## Running the application in dev mode
+---
 
-You can run your application in dev mode that enables live coding using:
+# Tecnologias
 
-```shell script
+## Framework
+
+* Java 21
+* Quarkus 3.37.4
+
+## Mensageria
+
+* Apache Kafka
+
+## Observabilidade
+
+* OpenTelemetry
+* Micrometer
+* Prometheus
+
+## Documentação
+
+* SmallRye OpenAPI
+* Swagger UI
+
+## Monitoramento
+
+* SmallRye Health
+
+## Serialização
+
+* Jackson
+
+## Testes
+
+* JUnit 5
+* REST Assured
+
+---
+
+# Pré-requisitos
+
+Antes de executar o projeto, tenha instalado:
+
+* Java 21
+* Maven 3.9+
+* Docker
+* Docker Compose
+
+---
+
+# Estrutura do projeto
+
+```text
+gateway-service/
+├── src/
+│   ├── main/
+│   └── test/
+├── Dockerfile
+├── pom.xml
+└── README.md
+```
+
+---
+
+# Funcionalidades atuais
+
+Atualmente o serviço disponibiliza:
+
+* Estrutura base em Quarkus;
+* Configuração da integração com Apache Kafka;
+* Exportação de traces via OpenTelemetry;
+* Métricas utilizando Micrometer;
+* Health Checks;
+* Documentação OpenAPI;
+* Swagger UI;
+* Configuração por perfis (`dev`, `test` e `prod`);
+* Logs estruturados em JSON para produção.
+
+---
+
+# Configuração
+
+A configuração principal da aplicação está em:
+
+```text
+src/main/resources/application.yaml
+```
+
+Os perfis suportados são:
+
+* `dev`
+* `test`
+* `prod`
+
+---
+
+# Executando localmente
+
+## Modo desenvolvimento
+
+Dentro da pasta do serviço:
+
+```bash
 ./mvnw quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+O Dev UI ficará disponível em:
 
-## Packaging and running the application
+```text
+http://localhost:8080/q/dev
+```
 
-The application can be packaged using:
+---
 
-```shell script
+## Build
+
+Gerar a aplicação:
+
+```bash
 ./mvnw package
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+Executar os testes:
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+```bash
+./mvnw test
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+Gerar imagem nativa:
 
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
+```bash
 ./mvnw package -Dnative
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+Utilizando container para o build nativo:
 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+```bash
+./mvnw package \
+  -Dnative \
+  -Dquarkus.native.container-build=true
 ```
 
-You can then execute your native executable with: `./target/gateway-service-0.0.1-SNAPSHOT-runner`
+---
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+# Executando com Docker Compose
 
-## Related Guides
+Na raiz do monorepo execute:
 
-- REST ([guide](https://quarkus.io/guides/rest)): Build RESTful web services and APIs using Jakarta REST (formerly JAX-RS)
+```bash
+docker compose -f docker-compose.dev.yaml up --build
+```
 
-## Provided Code
+Em background:
 
-### REST
+```bash
+docker compose -f docker-compose.dev.yaml up -d --build
+```
 
-Easily start your REST Web Services
+Parar os serviços:
 
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+```bash
+docker compose -f docker-compose.dev.yaml down
+```
+
+---
+
+# Infraestrutura local
+
+O ambiente de desenvolvimento utiliza Docker Compose para iniciar os serviços necessários ao ecossistema da aplicação.
+
+São inicializados:
+
+* Apache Kafka
+* PostgreSQL + PostGIS
+* Redis
+* OpenTelemetry Collector
+* Gateway Service
+
+---
+
+# Endpoints
+
+## Health
+
+```text
+/q/health
+/q/health/live
+/q/health/ready
+```
+
+---
+
+## Métricas
+
+```text
+/q/metrics
+```
+
+---
+
+## OpenAPI
+
+```text
+/q/openapi
+```
+
+---
+
+## Swagger UI
+
+```text
+/q/swagger-ui
+```
+
+---
+
+## Dev UI
+
+Disponível apenas no perfil `dev`.
+
+```text
+/q/dev
+```
+
+---
+
+# Kafka
+
+O endereço do broker é configurado através da variável:
+
+```text
+KAFKA_BOOTSTRAP_SERVERS
+```
+
+Valor padrão para desenvolvimento:
+
+```text
+localhost:9092
+```
+
+Ao executar via Docker Compose, a comunicação interna utiliza:
+
+```text
+kafka:9092
+```
+
+---
+
+# OpenTelemetry
+
+O serviço está preparado para exportação de traces utilizando OTLP.
+
+Variáveis suportadas:
+
+```text
+OTEL_EXPORTER_OTLP_ENDPOINT
+OTEL_EXPORTER_OTLP_PROTOCOL
+OTEL_TRACES_SAMPLER
+```
+
+No ambiente Docker Compose, o endpoint padrão é:
+
+```text
+http://otel-collector:4317
+```
+
+---
+
+# Observabilidade
+
+Atualmente o serviço oferece:
+
+* Health Checks
+* Métricas via Micrometer
+* Traces distribuídos com OpenTelemetry
+* Logs estruturados em JSON (perfil `prod`)
+
+---
+
+# Perfis
+
+## dev
+
+* Logs em nível `DEBUG`;
+* Dev UI habilitada;
+* Configuração voltada ao desenvolvimento local.
+
+## test
+
+* Logs em nível `INFO`;
+* Utilizado durante a execução dos testes automatizados.
+
+## prod
+
+* Logs em JSON;
+* OpenTelemetry habilitado;
+* Configuração para execução em ambiente produtivo.
+
+---
+
+# Próximas implementações
+
+As próximas etapas previstas para este serviço incluem:
+
+* Implementação do gateway TCP;
+* Recepção de conexões dos rastreadores;
+* Decodificação dos protocolos suportados;
+* Publicação de eventos no Apache Kafka;
+* Integração com os demais microsserviços da plataforma;
+* Evolução da observabilidade com métricas e spans de negócio;
+* Autenticação e autorização;
+* Rate limiting e controle de acesso.
+
+---
+
+# Licença
+
+Este projeto faz parte do ecossistema **TrackFlow** e é destinado ao desenvolvimento da plataforma.

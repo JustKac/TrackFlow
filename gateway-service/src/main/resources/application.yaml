@@ -17,6 +17,9 @@ quarkus:
   smallrye-openapi:
     path: /openapi
 
+  swagger-ui:
+    always-include: true
+
   otel:
     enabled: true
     resource:
